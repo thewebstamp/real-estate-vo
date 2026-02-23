@@ -14,7 +14,7 @@ export default function AdminHeader() {
                 <div className="flex justify-between items-center h-16">
                     {/* Left side */}
                     <div className="flex items-center space-x-6">
-                        <Link href="/admin" className="text-xl font-light text-primary">
+                        <Link href="/admin/listings" className="text-xl font-light text-primary">
                             Admin Dashboard
                         </Link>
                         <nav className="hidden sm:flex space-x-4">
