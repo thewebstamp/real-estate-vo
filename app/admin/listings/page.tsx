@@ -41,7 +41,7 @@ export default async function ListingsPage() {
             {listings.map(listing => (
               <tr key={listing.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{listing.title}</td>
-                <td className="px-6 py-4 whitespace-nowrap">${listing.price}</td>
+                <td className="px-6 py-4 whitespace-nowrap">${new Intl.NumberFormat('en-US').format(listing.price)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{listing.location}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{listing.bedrooms} / {listing.bathrooms}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{listing.property_type}</td>

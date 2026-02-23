@@ -105,7 +105,7 @@ export default function FeaturedListings({ listings }: { listings: Listing[] }) 
                                     <h3 className="text-xl font-semibold mb-2">{listing.title}</h3>
                                     <p className="text-gray-600 mb-2">{listing.location}</p>
                                     <p className="text-2xl font-bold text-blue-600 mb-3">
-                                        ${listing.price.toLocaleString()}
+                                        ${new Intl.NumberFormat('en-US').format(listing.price)}
                                     </p>
                                     <div className="flex justify-between text-sm text-gray-500">
                                         <span>{listing.bedrooms} beds</span>
