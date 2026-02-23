@@ -3,24 +3,87 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary: #0a1f44;
+  --secondary: #c9a86c;
+  --accent: #e5e7eb;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --primary: #1e3a8a;
+    --secondary: #b8860b;
+    --accent: #2d2d2d;
   }
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Luxury focus styles */
+*:focus-visible {
+  outline: none;
+  ring: 2px solid var(--secondary);
+  ring-offset: 2px;
+}
+
+@layer components {
+  .container-padding {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-padding {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-padding {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  .heading-xl {
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: 0.025em;
+    line-height: 1.2;
+  }
+  @media (min-width: 768px) {
+    .heading-xl {
+      font-size: 4.5rem;
+    }
+  }
+
+  .heading-lg {
+    font-size: 2.25rem;
+    font-weight: 300;
+    line-height: 1.3;
+  }
+  @media (min-width: 768px) {
+    .heading-lg {
+      font-size: 3rem;
+    }
+  }
 }
