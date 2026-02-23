@@ -82,15 +82,32 @@ export default async function ListingsPage({
 
     // Fetch listings with their first image
     const sql = `
-    SELECT 
-      l.id, l.title, l.slug, l.price, l.location, 
-      l.bedrooms, l.bathrooms, l.property_type,
-      (SELECT image_url FROM listing_images WHERE listing_id = l.id ORDER BY created_at LIMIT 1) as image_url
-    FROM listings l
-    ${whereClause}
-    ORDER BY l.created_at DESC
-    LIMIT 20
-  `;
+                    SELECT 
+                    l.id,
+                    l.title,
+                    l.slug,
+                    l.price,
+                    l.location,
+                    l.bedrooms,
+                    l.bathrooms,
+                    l.property_type,
+                    l.square_feet,
+                    l.lot_size,
+                    l.year_built,
+                    l.featured,
+                    l.status,
+                    (
+                        SELECT image_url 
+                        FROM listing_images 
+                        WHERE listing_id = l.id 
+                        ORDER BY created_at 
+                        LIMIT 1
+                    ) as image_url
+                    FROM listings l
+                    ${whereClause}
+                    ORDER BY l.created_at DESC
+                    LIMIT 20
+                    `;
 
     const result = await query(sql, values);
     const listings = result.rows;

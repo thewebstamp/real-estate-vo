@@ -20,6 +20,11 @@ const createSchema = z.object({
     "land",
     "commercial",
   ]),
+  year_built: z.number().int().optional(),
+  lot_size: z.number().optional(),
+  square_feet: z.number().optional(),
+  status: z.enum(["for_sale", "sold", "pending"]).optional(),
+  featured: z.boolean().optional(),
   images: z
     .array(z.object({ public_id: z.string(), url: z.string() }))
     .optional(),
@@ -31,7 +36,11 @@ export async function GET() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const result = await query("SELECT * FROM listings ORDER BY created_at DESC");
+  const result = await query(
+    `SELECT id, title, slug, price, location, bedrooms, bathrooms, property_type, year_built, lot_size, square_feet, status, featured, created_at
+     FROM listings
+     ORDER BY created_at DESC`,
+  );
   return NextResponse.json(result.rows);
 }
 
@@ -45,16 +54,13 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = createSchema.parse(body);
 
-    // Generate unique slug
     const slug = await getUniqueSlug(data.title);
 
-    // Start a transaction
     await query("BEGIN");
 
-    // Insert listing
     const insertResult = await query(
-      `INSERT INTO listings (title, slug, description, price, location, bedrooms, bathrooms, property_type)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO listings (title, slug, description, price, location, bedrooms, bathrooms, property_type, year_built, lot_size, square_feet, status, featured)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        RETURNING id`,
       [
         data.title,
@@ -65,22 +71,25 @@ export async function POST(request: Request) {
         data.bedrooms,
         data.bathrooms,
         data.property_type,
+        data.year_built || null,
+        data.lot_size || null,
+        data.square_feet || null,
+        data.status || "for_sale",
+        data.featured || false,
       ],
     );
     const listingId = insertResult.rows[0].id;
 
-    // Insert images if any
     if (data.images && data.images.length > 0) {
       for (const img of data.images) {
         await query(
-          "INSERT INTO listing_images (listing_id, image_url, public_id) VALUES ($1, $2, $3)",
+          "INSERT INTO listing_images (listing_id, image_url, public_id) VALUES ($1,$2,$3)",
           [listingId, img.url, img.public_id],
         );
       }
     }
 
     await query("COMMIT");
-
     return NextResponse.json({ id: listingId, slug }, { status: 201 });
   } catch (error) {
     await query("ROLLBACK");

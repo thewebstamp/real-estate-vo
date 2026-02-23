@@ -7,44 +7,42 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 
+// Updated schema with new fields
 const listingSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
     price: z.number().min(0, 'Price must be positive'),
     location: z.string().min(1, 'Location is required'),
-    bedrooms: z.number().int().min(0),
-    bathrooms: z.number().min(0),
+    bedrooms: z.number().int().min(0, 'Must be >= 0'),
+    bathrooms: z.number().min(0, 'Must be >= 0'),
     property_type: z.enum(['house', 'apartment', 'condo', 'townhouse', 'land', 'commercial']),
+    status: z.enum(['for_sale', 'sold', 'pending']),
+    year_built: z.number().int().min(1000).max(new Date().getFullYear()).optional(),
+    lot_size: z.number().min(0).optional(),
+    square_feet: z.number().min(0).optional(),
 });
 
 type ListingFormData = z.infer<typeof listingSchema>;
 
 interface Props {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialData?: any;
+    initialData?: Partial<ListingFormData> & { images?: { public_id: string; url: string }[] };
     listingId?: string;
 }
 
 export default function ListingForm({ initialData, listingId }: Props) {
     const router = useRouter();
     const [uploading, setUploading] = useState(false);
-    const [images, setImages] = useState<{ public_id: string; url: string }[]>(
-        initialData?.images || []
-    );
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<ListingFormData>({
+    const [images, setImages] = useState<{ public_id: string; url: string }[]>(initialData?.images || []);
+
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ListingFormData>({
         resolver: zodResolver(listingSchema),
         defaultValues: initialData,
     });
 
-    // Cloudinary upload handler
+    // Cloudinary upload
     const uploadImage = async (file: File) => {
         setUploading(true);
         try {
-            // Get signature from our API
             const signRes = await fetch('/api/cloudinary/sign');
             const { timestamp, signature, folder, apiKey, cloudName } = await signRes.json();
 
@@ -59,8 +57,9 @@ export default function ListingForm({ initialData, listingId }: Props) {
                 method: 'POST',
                 body: formData,
             });
+
             const data = await uploadRes.json();
-            setImages((prev) => [...prev, { public_id: data.public_id, url: data.secure_url }]);
+            setImages(prev => [...prev, { public_id: data.public_id, url: data.secure_url }]);
         } catch (error) {
             console.error('Upload failed', error);
         } finally {
@@ -69,8 +68,7 @@ export default function ListingForm({ initialData, listingId }: Props) {
     };
 
     const removeImage = (publicId: string) => {
-        // For a real app, you might also delete from Cloudinary via API
-        setImages(images.filter((img) => img.public_id !== publicId));
+        setImages(images.filter(img => img.public_id !== publicId));
     };
 
     const onSubmit = async (data: ListingFormData) => {
@@ -93,63 +91,39 @@ export default function ListingForm({ initialData, listingId }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded shadow space-y-6">
             <div>
                 <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                    {...register('title')}
-                    className="w-full border rounded px-3 py-2"
-                />
+                <input {...register('title')} className="w-full border rounded px-3 py-2" />
                 {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
             </div>
 
             <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                    {...register('description')}
-                    rows={4}
-                    className="w-full border rounded px-3 py-2"
-                />
+                <textarea {...register('description')} rows={4} className="w-full border rounded px-3 py-2" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Price</label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        {...register('price', { valueAsNumber: true })}
-                        className="w-full border rounded px-3 py-2"
-                    />
+                    <input type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
                     {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Location</label>
-                    <input
-                        {...register('location')}
-                        className="w-full border rounded px-3 py-2"
-                    />
+                    <input {...register('location')} className="w-full border rounded px-3 py-2" />
                     {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">Bedrooms</label>
-                    <input
-                        type="number"
-                        {...register('bedrooms', { valueAsNumber: true })}
-                        className="w-full border rounded px-3 py-2"
-                    />
+                    <input type="number" {...register('bedrooms', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
                     {errors.bedrooms && <p className="text-red-500 text-sm">{errors.bedrooms.message}</p>}
                 </div>
 
                 <div>
                     <label className="block text-sm font-medium mb-1">Bathrooms</label>
-                    <input
-                        type="number"
-                        step="0.5"
-                        {...register('bathrooms', { valueAsNumber: true })}
-                        className="w-full border rounded px-3 py-2"
-                    />
+                    <input type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
                     {errors.bathrooms && <p className="text-red-500 text-sm">{errors.bathrooms.message}</p>}
                 </div>
 
@@ -165,56 +139,59 @@ export default function ListingForm({ initialData, listingId }: Props) {
                     </select>
                     {errors.property_type && <p className="text-red-500 text-sm">{errors.property_type.message}</p>}
                 </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <select {...register('status')} className="w-full border rounded px-3 py-2">
+                        <option value="for_sale">For Sale</option>
+                        <option value="sold">Sold</option>
+                        <option value="pending">Pending</option>
+                    </select>
+                    {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
+                </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+                <div>
+                    <label className="block text-sm font-medium mb-1">Year Built</label>
+                    <input type="number" {...register('year_built', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
+                    {errors.year_built && <p className="text-red-500 text-sm">{errors.year_built.message}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Lot Size</label>
+                    <input type="number" step="0.01" {...register('lot_size', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
+                    {errors.lot_size && <p className="text-red-500 text-sm">{errors.lot_size.message}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1">Square Feet</label>
+                    <input type="number" step="1" {...register('square_feet', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
+                    {errors.square_feet && <p className="text-red-500 text-sm">{errors.square_feet.message}</p>}
+                </div>
             </div>
 
             {/* Image Upload */}
             <div>
                 <label className="block text-sm font-medium mb-2">Images</label>
                 <div className="flex flex-wrap gap-4 mb-4">
-                    {images.map((img) => (
+                    {images.map(img => (
                         <div key={img.public_id} className="relative w-32 h-32">
-                            <Image
-                                src={img.url}
-                                alt="Listing"
-                                fill
-                                className="object-cover rounded"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => removeImage(img.public_id)}
-                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                            >
-                                ×
-                            </button>
+                            <Image src={img.url} alt="Listing" fill className="object-cover rounded" />
+                            <button type="button" onClick={() => removeImage(img.public_id)} className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">×</button>
                         </div>
                     ))}
                 </div>
-                <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        files.forEach(uploadImage);
-                    }}
-                    className="block"
-                />
+                <input type="file" accept="image/*" multiple onChange={e => {
+                    const files = Array.from(e.target.files || []);
+                    files.forEach(uploadImage);
+                }} className="block" />
                 {uploading && <p className="text-sm text-gray-500 mt-2">Uploading...</p>}
             </div>
 
             <div className="flex justify-end space-x-4">
-                <button
-                    type="button"
-                    onClick={() => router.back()}
-                    className="px-4 py-2 border rounded hover:bg-gray-50"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    disabled={isSubmitting || uploading}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
+                <button type="button" onClick={() => router.back()} className="px-4 py-2 border rounded hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={isSubmitting || uploading} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
                     {listingId ? 'Update' : 'Create'} Listing
                 </button>
             </div>

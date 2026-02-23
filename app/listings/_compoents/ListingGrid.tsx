@@ -5,12 +5,15 @@ interface ListingGridProps {
         id: string;
         title: string;
         slug: string;
-        price: number;
+        price: number | string;
         location: string;
         bedrooms: number;
-        bathrooms: number;
+        bathrooms: number | string;
         property_type: string;
         image_url: string | null;
+        square_feet?: number;
+        lot_size?: number;
+        year_built?: number;
     }>;
 }
 
