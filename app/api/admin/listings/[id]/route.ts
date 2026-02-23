@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { query } from "@/lib/db";
@@ -23,55 +23,58 @@ const updateSchema = z.object({
 });
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "admin") {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { id } = await params;
+  const { id } = await context.params;
+
   const listingResult = await query("SELECT * FROM listings WHERE id = $1", [
     id,
   ]);
+
   if (listingResult.rowCount === 0) {
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
+
   const listing = listingResult.rows[0];
 
   const imagesResult = await query(
     "SELECT * FROM listing_images WHERE listing_id = $1",
     [id],
   );
+
   listing.images = imagesResult.rows;
 
   return NextResponse.json(listing);
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "admin") {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { id } = await params;
+  const { id } = await context.params;
+
   try {
     const body = await request.json();
     const data = updateSchema.parse(body);
 
     await query("BEGIN");
 
-    // If title changed, update slug
     let slug;
     if (data.title) {
       slug = await getUniqueSlug(data.title);
     }
 
-    // Build dynamic update query
     const updates: string[] = [];
     const values: any[] = [];
     let paramIndex = 1;
@@ -108,6 +111,7 @@ export async function PUT(
       updates.push(`slug = $${paramIndex++}`);
       values.push(slug);
     }
+
     updates.push(`updated_at = now()`);
 
     if (updates.length > 0) {
@@ -118,32 +122,31 @@ export async function PUT(
       );
     }
 
-    // Handle images: we need to sync the provided images with DB
     if (data.images) {
-      // Get current images
       const currentImages = await query(
         "SELECT public_id FROM listing_images WHERE listing_id = $1",
         [id],
       );
+
       const currentPublicIds = currentImages.rows.map((r: any) => r.public_id);
       const newPublicIds = data.images.map((img) => img.public_id);
 
-      // Images to delete (in DB and Cloudinary)
       const toDelete = currentPublicIds.filter(
-        (pid) => !newPublicIds.includes(pid),
+        (pid: string) => !newPublicIds.includes(pid),
       );
+
       for (const pid of toDelete) {
-        await deleteImage(pid); // Delete from Cloudinary
+        await deleteImage(pid);
         await query(
           "DELETE FROM listing_images WHERE listing_id = $1 AND public_id = $2",
           [id, pid],
         );
       }
 
-      // Images to add
       const toAdd = data.images.filter(
         (img) => !currentPublicIds.includes(img.public_id),
       );
+
       for (const img of toAdd) {
         await query(
           "INSERT INTO listing_images (listing_id, image_url, public_id) VALUES ($1, $2, $3)",
@@ -157,6 +160,7 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     await query("ROLLBACK");
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -169,6 +173,7 @@ export async function PUT(
         { status: 400 },
       );
     }
+
     console.error(error);
     return NextResponse.json(
       { error: "Internal Server Error" },
@@ -178,29 +183,28 @@ export async function PUT(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "admin") {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { id } = await params;
+  const { id } = await context.params;
 
   try {
     await query("BEGIN");
 
-    // Get all image public_ids to delete from Cloudinary
     const images = await query(
       "SELECT public_id FROM listing_images WHERE listing_id = $1",
       [id],
     );
+
     for (const row of images.rows) {
       await deleteImage(row.public_id);
     }
 
-    // Delete listing (cascade will remove images from DB)
     await query("DELETE FROM listings WHERE id = $1", [id]);
 
     await query("COMMIT");
@@ -209,6 +213,7 @@ export async function DELETE(
   } catch (error) {
     await query("ROLLBACK");
     console.error(error);
+
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },
