@@ -5,6 +5,7 @@ import HeroSection from '@/components/animations/HeroSection';
 import AnimatedTextBlock from '@/components/animations/AnimatedTextBlock';
 import FeaturedListings from '@/components/animations/FeaturedListings';
 import JsonLd from './JsonLD';
+import bcrypt from "bcryptjs";
 
 export default async function HomePage() {
   // Fetch up to 6 featured listings with their first image
@@ -19,6 +20,16 @@ export default async function HomePage() {
      LIMIT 6`
   );
   const featuredListings = featuredResult.rows;
+
+  // hash.js
+  // const bcrypt = require("bcrypt");
+
+  async function run() {
+    const hash = await bcrypt.hash("adminpassword", 10);
+    console.log(hash);
+  }
+
+  run();
 
   return (
 

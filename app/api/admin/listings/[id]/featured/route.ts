@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 
 export async function PATCH(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -20,13 +20,12 @@ export async function PATCH(
     const body = await request.json();
     const { featured } = body;
 
-    await query(
-      "UPDATE listings SET featured = $1 WHERE id = $2",
-      [featured, id]
-    );
+    await query("UPDATE listings SET featured = $1 WHERE id = $2", [
+      featured,
+      id,
+    ]);
 
     return NextResponse.json({ success: true });
-
   } catch (error) {
     console.error("PATCH featured error:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
