@@ -106,7 +106,7 @@ export default async function ListingPage({ params }: PageProps) {
                         <div className="lg:col-span-2">
                             <h1 className="text-4xl font-light text-gray-900 mb-4">{listing.title}</h1>
                             <p className="text-2xl text-blue-600 font-semibold mb-6">
-                                ${listing.price.toLocaleString()}
+                                ${new Intl.NumberFormat('en-US').format(listing.price)}
                             </p>
                             <p className="text-gray-700 mb-4">{listing.location}</p>
 
@@ -125,7 +125,7 @@ export default async function ListingPage({ params }: PageProps) {
                                 </div>
                                 <div className="bg-white p-4 rounded shadow">
                                     <p className="text-sm text-gray-500">Year Built</p>
-                                    <p className="text-2xl font-semibold">—</p>
+                                    <p className="text-2xl font-semibold">{listing.year_built || "-"}</p>
                                 </div>
                             </div>
 
