@@ -1,3 +1,4 @@
+// app/page.tsx
 import { query } from '@/lib/db';
 import { Suspense } from 'react';
 import ParallaxCTA from '@/components/animations/ParallaxCTA';
@@ -6,8 +7,10 @@ import AnimatedTextBlock from '@/components/animations/AnimatedTextBlock';
 import FeaturedListings from '@/components/animations/FeaturedListings';
 import JsonLd from './JsonLD';
 
+// Force fresh SSR on every request
+export const revalidate = 0;
+
 export default async function HomePage() {
-  // Fetch up to 6 featured listings with their first image
   const featuredResult = await query(
     `SELECT 
         l.id, l.title, l.slug, l.price, l.location, 
@@ -18,10 +21,13 @@ export default async function HomePage() {
      ORDER BY l.created_at DESC
      LIMIT 6`
   );
-  const featuredListings = featuredResult.rows;
+
+  const featuredListings = featuredResult.rows.map(listing => ({
+    ...listing,
+    price: Number(listing.price)
+  }));
 
   return (
-
     <>
       <JsonLd />
       <main className="overflow-x-hidden">
@@ -40,6 +46,7 @@ export default async function HomePage() {
         <Suspense fallback={<div className="h-80 bg-gray-300" />}>
           <ParallaxCTA />
         </Suspense>
-      </main></>
+      </main>
+    </>
   );
 }
