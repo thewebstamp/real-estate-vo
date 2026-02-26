@@ -3,10 +3,9 @@
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Mail, LogIn, Eye, EyeOff } from "lucide-react";
-import { AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -15,6 +14,12 @@ export default function LoginPage() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    // Handle mounting to avoid hydration mismatch
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,6 +40,15 @@ export default function LoginPage() {
             router.push("/admin/listings");
         }
     };
+
+    // Don't render particles until after mounting
+    if (!mounted) {
+        return (
+            <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4">
+                <div className="w-full max-w-md h-96 animate-pulse bg-white/5 rounded-3xl" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center p-4 relative overflow-hidden">
@@ -67,14 +81,14 @@ export default function LoginPage() {
                 className="absolute bottom-20 right-20 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"
             />
 
-            {/* Floating particles */}
+            {/* Floating particles - Now safe because we're on client */}
             <div className="absolute inset-0 pointer-events-none">
                 {[...Array(20)].map((_, i) => (
                     <motion.div
                         key={i}
                         initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight,
+                            x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+                            y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000),
                         }}
                         animate={{
                             y: [null, -30, 30, -30],
