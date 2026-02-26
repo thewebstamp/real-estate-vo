@@ -14,10 +14,12 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
+        <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex flex-col">
             <AdminHeader />
-            <main className="grow py-10">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">{children}</div>
+            <main className="flex-1 py-6 md:py-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {children}
+                </div>
             </main>
         </div>
     );

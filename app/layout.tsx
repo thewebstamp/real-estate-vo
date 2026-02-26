@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Josefin_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import PublicHeader from '@/components/layout/PublicHeader';
 import PublicFooter from '@/components/layout/PublicFooter';
@@ -8,6 +8,19 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
+const josefin = Josefin_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-josefin',
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -51,8 +64,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen flex flex-col">
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${josefin.variable}`}>
+      <body className="min-h-screen flex flex-col font-sans">
         <PublicHeader />
         <main className="grow">{children}</main>
         <PublicFooter />

@@ -12,17 +12,17 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
     return (
-        <main className="overflow-x-hidden">
-            <Suspense fallback={<div className="h-screen bg-gray-900" />}>
+        <main className="overflow-x-hidden bg-black">
+            <Suspense fallback={<div className="h-screen bg-black animate-pulse" />}>
                 <AboutHero />
             </Suspense>
-            <Suspense fallback={<div className="h-96 bg-gray-100" />}>
+            <Suspense fallback={<div className="h-96 bg-gray-900 animate-pulse" />}>
                 <StorySection />
             </Suspense>
-            <Suspense fallback={<div className="h-96 bg-gray-200" />}>
+            <Suspense fallback={<div className="h-96 bg-gray-900 animate-pulse" />}>
                 <MissionSection />
             </Suspense>
-            <Suspense fallback={<div className="h-80 bg-gray-50" />}>
+            <Suspense fallback={<div className="h-80 bg-gray-900 animate-pulse" />}>
                 <ValuesSection />
             </Suspense>
         </main>

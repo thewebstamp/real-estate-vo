@@ -20,8 +20,10 @@ interface ListingGridProps {
 export default function ListingGrid({ listings }: ListingGridProps) {
     if (listings.length === 0) {
         return (
-            <div className="text-center py-12">
+            <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                <div className="text-gray-400 mb-3">🏠</div>
                 <p className="text-gray-500 text-lg">No properties match your criteria.</p>
+                <p className="text-gray-400 text-sm mt-2">Try adjusting your filters</p>
             </div>
         );
     }

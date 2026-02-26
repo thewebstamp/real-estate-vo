@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
+import { X, Upload, Save } from 'lucide-react';
 
-// Updated schema with new fields
 const listingSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
@@ -88,111 +88,156 @@ export default function ListingForm({ initialData, listingId }: Props) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded shadow space-y-6">
-            <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input {...register('title')} className="w-full border rounded px-3 py-2" />
-                {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* Basic Information */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Basic Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                        <input {...register('title')} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
+                    </div>
 
-            <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea {...register('description')} rows={4} className="w-full border rounded px-3 py-2" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Price</label>
-                    <input type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+                        <input {...register('location')} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location.message}</p>}
+                    </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium mb-1">Location</label>
-                    <input {...register('location')} className="w-full border rounded px-3 py-2" />
-                    {errors.location && <p className="text-red-500 text-sm">{errors.location.message}</p>}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea {...register('description')} rows={4} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors resize-none" />
                 </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Bedrooms</label>
-                    <input type="number" {...register('bedrooms', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.bedrooms && <p className="text-red-500 text-sm">{errors.bedrooms.message}</p>}
-                </div>
+            {/* Pricing & Type */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Pricing & Type</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Price *</label>
+                        <input type="number" step="0.01" {...register('price', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price.message}</p>}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Bathrooms</label>
-                    <input type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.bathrooms && <p className="text-red-500 text-sm">{errors.bathrooms.message}</p>}
-                </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Property Type *</label>
+                        <select {...register('property_type')} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors">
+                            <option value="house">House</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="condo">Condo</option>
+                            <option value="townhouse">Townhouse</option>
+                            <option value="land">Land</option>
+                            <option value="commercial">Commercial</option>
+                        </select>
+                        {errors.property_type && <p className="text-red-500 text-sm mt-1">{errors.property_type.message}</p>}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Property Type</label>
-                    <select {...register('property_type')} className="w-full border rounded px-3 py-2">
-                        <option value="house">House</option>
-                        <option value="apartment">Apartment</option>
-                        <option value="condo">Condo</option>
-                        <option value="townhouse">Townhouse</option>
-                        <option value="land">Land</option>
-                        <option value="commercial">Commercial</option>
-                    </select>
-                    {errors.property_type && <p className="text-red-500 text-sm">{errors.property_type.message}</p>}
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium mb-1">Status</label>
-                    <select {...register('status')} className="w-full border rounded px-3 py-2">
-                        <option value="for_sale">For Sale</option>
-                        <option value="sold">Sold</option>
-                        <option value="pending">Pending</option>
-                    </select>
-                    {errors.status && <p className="text-red-500 text-sm">{errors.status.message}</p>}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                        <select {...register('status')} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors">
+                            <option value="for_sale">For Sale</option>
+                            <option value="sold">Sold</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>}
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Year Built</label>
-                    <input type="number" {...register('year_built', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.year_built && <p className="text-red-500 text-sm">{errors.year_built.message}</p>}
-                </div>
+            {/* Property Details */}
+            <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Property Details</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bedrooms *</label>
+                        <input type="number" {...register('bedrooms', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.bedrooms && <p className="text-red-500 text-sm mt-1">{errors.bedrooms.message}</p>}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Lot Size</label>
-                    <input type="number" step="0.01" {...register('lot_size', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.lot_size && <p className="text-red-500 text-sm">{errors.lot_size.message}</p>}
-                </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bathrooms *</label>
+                        <input type="number" step="0.5" {...register('bathrooms', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.bathrooms && <p className="text-red-500 text-sm mt-1">{errors.bathrooms.message}</p>}
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium mb-1">Square Feet</label>
-                    <input type="number" step="1" {...register('square_feet', { valueAsNumber: true })} className="w-full border rounded px-3 py-2" />
-                    {errors.square_feet && <p className="text-red-500 text-sm">{errors.square_feet.message}</p>}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Year Built</label>
+                        <input type="number" {...register('year_built', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.year_built && <p className="text-red-500 text-sm mt-1">{errors.year_built.message}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Lot Size (sqft)</label>
+                        <input type="number" step="0.01" {...register('lot_size', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.lot_size && <p className="text-red-500 text-sm mt-1">{errors.lot_size.message}</p>}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Square Feet</label>
+                        <input type="number" step="1" {...register('square_feet', { valueAsNumber: true })} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors" />
+                        {errors.square_feet && <p className="text-red-500 text-sm mt-1">{errors.square_feet.message}</p>}
+                    </div>
                 </div>
             </div>
 
             {/* Image Upload */}
-            <div>
-                <label className="block text-sm font-medium mb-2">Images</label>
+            <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">Property Images</h2>
                 <div className="flex flex-wrap gap-4 mb-4">
                     {images.map(img => (
-                        <div key={img.public_id} className="relative w-32 h-32">
-                            <Image src={img.url} alt="Listing" fill className="object-cover rounded" />
-                            <button type="button" onClick={() => removeImage(img.public_id)} className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">×</button>
+                        <div key={img.public_id} className="relative w-32 h-32 group">
+                            <Image src={img.url} alt="Listing" fill className="object-cover rounded-lg" />
+                            <button
+                                type="button"
+                                onClick={() => removeImage(img.public_id)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
                     ))}
                 </div>
-                <input type="file" accept="image/*" multiple onChange={e => {
-                    const files = Array.from(e.target.files || []);
-                    files.forEach(uploadImage);
-                }} className="block" />
-                {uploading && <p className="text-sm text-gray-500 mt-2">Uploading...</p>}
+
+                <div className="flex items-center space-x-4">
+                    <label className="relative cursor-pointer bg-white border border-gray-300 rounded-lg px-4 py-2.5 hover:bg-gray-50 transition-colors">
+                        <span className="flex items-center space-x-2">
+                            <Upload className="w-4 h-4" />
+                            <span>Upload Images</span>
+                        </span>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={e => {
+                                const files = Array.from(e.target.files || []);
+                                files.forEach(uploadImage);
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                        />
+                    </label>
+                    {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+                </div>
             </div>
 
-            <div className="flex justify-end space-x-4">
-                <button type="button" onClick={() => router.back()} className="px-4 py-2 border rounded hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={isSubmitting || uploading} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
-                    {listingId ? 'Update' : 'Create'} Listing
+            {/* Form Actions */}
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <button
+                    type="button"
+                    onClick={() => router.back()}
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={isSubmitting || uploading}
+                    className="inline-flex items-center space-x-2 bg-linear-to-r from-secondary to-yellow-500 text-black px-6 py-2.5 rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
+                >
+                    <Save className="w-4 h-4" />
+                    <span>{listingId ? 'Update' : 'Create'} Listing</span>
                 </button>
             </div>
         </form>
