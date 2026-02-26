@@ -26,17 +26,21 @@ export default async function ListingsPage({
     searchParams: Promise<SearchParams>;
 }) {
     const params = await searchParams;
-
-    // Build dynamic WHERE clause based on provided filters
+    
     const conditions: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const values: any[] = [];
     let paramIndex = 1;
 
-    // Location search (case‑insensitive)
+    // Search across multiple fields (title, location, description)
     if (params.q) {
-        conditions.push(`location ILIKE $${paramIndex++}`);
+        conditions.push(`(
+        title ILIKE $${paramIndex} OR 
+        location ILIKE $${paramIndex} OR 
+        description ILIKE $${paramIndex}
+    )`);
         values.push(`%${params.q}%`);
+        paramIndex++;
     }
 
     // Price range

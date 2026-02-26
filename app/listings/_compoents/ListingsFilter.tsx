@@ -18,8 +18,8 @@ export default function ListingsFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Local state for immediate feedback (inputs controlled)
-  const [q, setQ] = useState(searchParams.get('q') || '');
+  // Local state for immediate feedback
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
   const [bedrooms, setBedrooms] = useState(searchParams.get('bedrooms') || '');
@@ -30,7 +30,7 @@ export default function ListingsFilter() {
   // Debounced function to update URL
   const updateFilters = useDebouncedCallback(() => {
     const params = new URLSearchParams();
-    if (q) params.set('q', q);
+    if (searchTerm) params.set('q', searchTerm);
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (bedrooms) params.set('bedrooms', bedrooms);
@@ -43,11 +43,11 @@ export default function ListingsFilter() {
   // Trigger debounced update when any filter changes
   useEffect(() => {
     updateFilters();
-  }, [q, minPrice, maxPrice, bedrooms, bathrooms, propertyType, updateFilters]);
+  }, [searchTerm, minPrice, maxPrice, bedrooms, bathrooms, propertyType, updateFilters]);
 
   // Clear all filters
   const clearFilters = () => {
-    setQ('');
+    setSearchTerm('');
     setMinPrice('');
     setMaxPrice('');
     setBedrooms('');
@@ -57,7 +57,7 @@ export default function ListingsFilter() {
   };
 
   // Check if any filters are active
-  const hasActiveFilters = q || minPrice || maxPrice || bedrooms || bathrooms || propertyType;
+  const hasActiveFilters = searchTerm || minPrice || maxPrice || bedrooms || bathrooms || propertyType;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
@@ -85,22 +85,25 @@ export default function ListingsFilter() {
       {/* Filter content */}
       <div className={`transition-all duration-300 ${isExpanded ? 'p-6' : 'h-0 p-0 opacity-0 pointer-events-none'}`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Location search */}
-          <div className="space-y-2">
-            <label htmlFor="q" className="block text-sm font-medium text-gray-700">
-              Location
+          {/* Search input */}
+          <div className="md:col-span-2 lg:col-span-3 space-y-2">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+              Search Properties
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                id="q"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="City, area..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors"
+                id="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by title, location, description..."
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors"
               />
             </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Search across property titles, locations, and descriptions
+            </p>
           </div>
 
           {/* Price range */}
@@ -193,7 +196,7 @@ export default function ListingsFilter() {
         </div>
       </div>
 
-      {/* Mobile filter button (always visible) */}
+      {/* Mobile filter button */}
       <div className="md:hidden p-4 border-t border-gray-100">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
